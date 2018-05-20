@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
-import { PanResponder, View, Image } from 'react-native';
+import PropTypes from 'prop-types';
+import { View, Image } from 'react-native';
+
+import { GestureContainer } from './../';
 
 import styles, { CONSTANTS } from './styles.js';
 
@@ -12,26 +15,12 @@ class Item extends Component {
   imageStyles = { styles: {} }
 
   componentWillMount() {
-    this.setupPanResponder();
     this.setupStyles();
   }
 
   componentDidMount() {
     this.updateNativeStyles(this.item, this.itemStyles);
     this.updateNativeStyles(this.image, this.imageStyles);
-  }
-
-  setupPanResponder = () => {
-    this.panResponder = PanResponder.create({
-      onStartShouldSetPanResponder: (event, gestureState) => true,
-      onStartShouldSetPanResponderCapture: (event, gestureState) => true,
-      onMoveShouldSetPanResponder: (event, gestureState) => true,
-      onMoveShouldSetPanResponderCapture: (event, gestureState) => true,
-      onPanResponderGrant: this.handlePanResponderGrant,
-      onPanResponderMove: this.handlePanResponderMove,
-      onPanResponderRelease: this.handlePanResponderEnd,
-      onPanResponderTerminate: this.handlePanResponderEnd,
-    });
   }
 
   setupStyles = () => {
@@ -147,19 +136,28 @@ class Item extends Component {
     const { source } = this.props;
 
     return (
-      <View
-        ref={item => this.item = item}
-        style={styles.container}
-        {...this.panResponder.panHandlers}
+      <GestureContainer
+        handlePanResponderGrant={this.handlePanResponderGrant}
+        handlePanResponderMove={this.handlePanResponderMove}
+        handlePanResponderEnd={this.handlePanResponderEnd}
       >
-        <Image
-          ref={image => this.image = image}
-          style={styles.image}
-          source={source}
-        />
-      </View>
+        <View
+          ref={item => this.item = item}
+          style={styles.container}
+        >
+          <Image
+            ref={image => this.image = image}
+            style={styles.image}
+            source={source}
+          />
+        </View>
+      </GestureContainer>
     );
   }
-}
+};
+
+Item.propTypes = {
+  source: PropTypes.number.isRequired,
+};
 
 export default Item;

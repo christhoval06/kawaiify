@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 export const CONSTANTS = {
-  ITEM_HEIGHT: 96,
+  ITEM_WIDTH: 64,
   DEFAULT_POSITION: 0,
   DESELECTED_BORDER_COLOR: 'none',
   DESELECTED_BORDER_WIDTH: 0,
@@ -10,9 +10,13 @@ export const CONSTANTS = {
 };
 
 const styles = StyleSheet.create({
-  item: {
+  container: {
     position: 'absolute',
-    width: CONSTANTS.ITEM_HEIGHT,
+    padding: 16,
+  },
+  image: {
+    flex: 1,
+    width: CONSTANTS.ITEM_WIDTH,
     resizeMode: 'contain',
   },
 });

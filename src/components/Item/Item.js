@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { PanResponder, Image } from 'react-native';
+import { PanResponder, View, Image } from 'react-native';
 
 import styles, { CONSTANTS } from './styles.js';
 
@@ -39,18 +39,18 @@ class Item extends Component {
       borderColor: CONSTANTS.DESELECTED_BORDER_COLOR,
     };
 
-    this.updateItemStyles(newStyles);
+    this.updateItemStyles(this.itemStyles, newStyles);
   }
 
-  updateItemStyles = (newStyles) => {
-    this.itemStyles.style = {
-      ...this.itemStyles.style,
+  updateItemStyles = (itemStyles, newStyles) => {
+    itemStyles.style = {
+      ...itemStyles.style,
       ...newStyles,
-    }
+    };
   }
 
-  updateNativeStyles = () => {
-    this.item && this.item.setNativeProps(this.itemStyles);
+  updateNativeStyles = (ref, newStyles) => {
+    ref && ref.setNativeProps(newStyles);
   }
 
   handlePanResponderGrant = () => {
@@ -63,19 +63,41 @@ class Item extends Component {
       borderColor: CONSTANTS.SELECTED_BORDER_COLOR,
     }
 
-    this.updateItemStyles(newStyles);
-    this.updateNativeStyles();
+    this.updateItemStyles(this.itemStyles, newStyles);
+    this.updateNativeStyles(this.item, this.itemStyles);
   }
 
   handlePanResponderMove = (event, gestureState) => {
-    const { dx, dy } = gestureState;
+    const { changedTouches } = event.nativeEvent;
+    const isPinch = changedTouches.length > 1;
+
+    if (isPinch) {
+      [touch1, touch2] = changedTouches;
+      this.processPinch(
+        touch1.pageX,
+        touch1.pageY,
+        touch2.pageX,
+        touch2.pageY
+      );
+    } else {
+      const { dx, dy } = gestureState;
+
+      this.processMove(dx, dy);
+    }
+  }
+
+  processPinch = (x1, y1, x2, y2) => {
+    // TODO: Implement scale functionality
+  }
+
+  processMove = (x, y) => {
     const newStyles = {
-      left: this.previousLeft + dx,
-      top: this.previousTop + dy,
+      left: this.previousLeft + x,
+      top: this.previousTop + y,
     };
 
-    this.updateItemStyles(newStyles);
-    this.updateNativeStyles();
+    this.updateItemStyles(this.itemStyles, newStyles);
+    this.updateNativeStyles(this.item, this.itemStyles);
   }
 
   handlePanResponderEnd = (event, gestureState) => {
@@ -91,8 +113,8 @@ class Item extends Component {
       borderColor: CONSTANTS.DESELECTED_BORDER_COLOR,
     }
 
-    this.updateItemStyles(newStyles);
-    this.updateNativeStyles();
+    this.updateItemStyles(this.itemStyles, newStyles);
+    this.updateNativeStyles(this.item, this.itemStyles);
   }
 
   updatePrevious = (x, y) => {
@@ -104,12 +126,16 @@ class Item extends Component {
     const { source } = this.props;
 
     return (
-      <Image
-        source={source}
+      <View
         ref={item => this.item = item}
-        style={styles.item}
+        style={styles.container}
         {...this.panResponder.panHandlers}
-      />
+      >
+        <Image
+          style={styles.image}
+          source={source}
+        />
+      </View>
     );
   }
 }

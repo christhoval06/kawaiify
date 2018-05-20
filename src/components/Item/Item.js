@@ -7,7 +7,9 @@ import styles, { CONSTANTS } from './styles.js';
 class Item extends Component {
   previousTop = CONSTANTS.DEFAULT_POSITION
   previousLeft = CONSTANTS.DEFAULT_POSITION
+  previousWidth = CONSTANTS.ITEM_WIDTH
   itemStyles = { styles: {} }
+  imageStyles = { styles: {} }
 
   componentWillMount() {
     this.setupPanResponder();
@@ -15,7 +17,8 @@ class Item extends Component {
   }
 
   componentDidMount() {
-    this.updateNativeStyles();
+    this.updateNativeStyles(this.item, this.itemStyles);
+    this.updateNativeStyles(this.image, this.imageStyles);
   }
 
   setupPanResponder = () => {
@@ -32,19 +35,24 @@ class Item extends Component {
   }
 
   setupStyles = () => {
-    const newStyles = {
+    const newItemStyles = {
       left: this.previousTop,
       top: this.previousLeft,
       borderWidth: CONSTANTS.DESELECTED_BORDER_WIDTH,
       borderColor: CONSTANTS.DESELECTED_BORDER_COLOR,
     };
 
-    this.updateItemStyles(this.itemStyles, newStyles);
+    const newImageStyles = {
+      width: this.previousWidth,
+    };
+
+    this.updateStylesObject(this.itemStyles, newItemStyles);
+    this.updateStylesObject(this.imageStyles, newImageStyles);
   }
 
-  updateItemStyles = (itemStyles, newStyles) => {
-    itemStyles.style = {
-      ...itemStyles.style,
+  updateStylesObject = (ref, newStyles) => {
+    ref.style = {
+      ...ref.style,
       ...newStyles,
     };
   }
@@ -63,7 +71,7 @@ class Item extends Component {
       borderColor: CONSTANTS.SELECTED_BORDER_COLOR,
     }
 
-    this.updateItemStyles(this.itemStyles, newStyles);
+    this.updateStylesObject(this.itemStyles, newStyles);
     this.updateNativeStyles(this.item, this.itemStyles);
   }
 
@@ -87,7 +95,20 @@ class Item extends Component {
   }
 
   processPinch = (x1, y1, x2, y2) => {
-    // TODO: Implement scale functionality
+    const newStyles = {
+      // TODO: Also scale height
+      width: this.calculateDistance(x1, y1, x2, y2),
+    };
+
+    this.updateStylesObject(this.imageStyles, newStyles);
+    this.updateNativeStyles(this.image, this.imageStyles);
+  }
+
+  calculateDistance = (x1, y1, x2, y2) => {
+    const x = x1 - x2;
+    const y = y1 - y2;
+
+    return Math.sqrt( x * x + y * y );
   }
 
   processMove = (x, y) => {
@@ -96,7 +117,7 @@ class Item extends Component {
       top: this.previousTop + y,
     };
 
-    this.updateItemStyles(this.itemStyles, newStyles);
+    this.updateStylesObject(this.itemStyles, newStyles);
     this.updateNativeStyles(this.item, this.itemStyles);
   }
 
@@ -113,7 +134,7 @@ class Item extends Component {
       borderColor: CONSTANTS.DESELECTED_BORDER_COLOR,
     }
 
-    this.updateItemStyles(this.itemStyles, newStyles);
+    this.updateStylesObject(this.itemStyles, newStyles);
     this.updateNativeStyles(this.item, this.itemStyles);
   }
 
@@ -132,6 +153,7 @@ class Item extends Component {
         {...this.panResponder.panHandlers}
       >
         <Image
+          ref={image => this.image = image}
           style={styles.image}
           source={source}
         />

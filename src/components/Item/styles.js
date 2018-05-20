@@ -1,18 +1,19 @@
 import { StyleSheet } from 'react-native';
 
-const itemHeight = 96;
-const foo = 'red';
-const bar = 'blue';
+export const CONSTANTS = {
+  ITEM_HEIGHT: 96,
+  DEFAULT_POSITION: 0,
+  DESELECTED_BORDER_COLOR: 'none',
+  DESELECTED_BORDER_WIDTH: 0,
+  SELECTED_BORDER_COLOR: 'red',
+  SELECTED_BORDER_WIDTH: 1,
+};
 
 const styles = StyleSheet.create({
   item: {
-    width: itemHeight,
-    top: '50%',
+    position: 'absolute',
+    width: CONSTANTS.ITEM_HEIGHT,
     resizeMode: 'contain',
-  },
-  selected: {
-    borderWidth: 1,
-    borderColor: bar,
   },
 });
 

@@ -1,20 +1,24 @@
 import React, { Component } from 'react';
 import { PanResponder, Image } from 'react-native';
 
-import styles from './styles.js';
+import styles, { CONSTANTS } from './styles.js';
 
+// https://github.com/facebook/react-native/blob/master/RNTester/js/PanResponderExample.js
 class Item extends Component {
-  state = {
-    x: 0,
-    y: 0,
-    isSelected: false,
-  }
+  previousTop = CONSTANTS.DEFAULT_POSITION
+  previousLeft = CONSTANTS.DEFAULT_POSITION
+  itemStyles = { styles: {} }
 
   componentWillMount() {
-    this.createPanResponder();
+    this.setupPanResponder();
+    this.setupStyles();
   }
 
-  createPanResponder = () => {
+  componentDidMount() {
+    this.updateNativeStyles();
+  }
+
+  setupPanResponder = () => {
     this.panResponder = PanResponder.create({
       onStartShouldSetPanResponder: (event, gestureState) => true,
       onStartShouldSetPanResponderCapture: (event, gestureState) => true,
@@ -27,47 +31,83 @@ class Item extends Component {
     });
   }
 
+  setupStyles = () => {
+    const newStyles = {
+      left: this.previousTop,
+      top: this.previousLeft,
+      borderWidth: CONSTANTS.DESELECTED_BORDER_WIDTH,
+      borderColor: CONSTANTS.DESELECTED_BORDER_COLOR,
+    };
+
+    this.updateItemStyles(newStyles);
+  }
+
+  updateItemStyles = (newStyles) => {
+    this.itemStyles.style = {
+      ...this.itemStyles.style,
+      ...newStyles,
+    }
+  }
+
+  updateNativeStyles = () => {
+    this.item && this.item.setNativeProps(this.itemStyles);
+  }
+
   handlePanResponderGrant = () => {
-    this.toggleSelected();
+    this.selectItem();
+  }
+
+  selectItem = () => {
+    const newStyles = {
+      borderWidth: CONSTANTS.SELECTED_BORDER_WIDTH,
+      borderColor: CONSTANTS.SELECTED_BORDER_COLOR,
+    }
+
+    this.updateItemStyles(newStyles);
+    this.updateNativeStyles();
   }
 
   handlePanResponderMove = (event, gestureState) => {
     const { dx, dy } = gestureState;
+    const newStyles = {
+      left: this.previousLeft + dx,
+      top: this.previousTop + dy,
+    };
 
-    // TODO: Calculate accurate coordinates
-    this.updatePosition(dx, dy);
+    this.updateItemStyles(newStyles);
+    this.updateNativeStyles();
   }
 
-  handlePanResponderEnd = () => {
-    this.toggleSelected();
+  handlePanResponderEnd = (event, gestureState) => {
+    const { dx, dy } = gestureState;
+
+    this.deselectItem();
+    this.updatePrevious(dx, dy);
   }
 
-  toggleSelected = () => {
-    this.setState({
-      isSelected: !this.state.isSelected,
-    });
+  deselectItem = () => {
+    const newStyles = {
+      borderWidth: CONSTANTS.DESELECTED_BORDER_WIDTH,
+      borderColor: CONSTANTS.DESELECTED_BORDER_COLOR,
+    }
+
+    this.updateItemStyles(newStyles);
+    this.updateNativeStyles();
   }
 
-  updatePosition = (x, y) => {
-    this.setState({ x, y });
+  updatePrevious = (x, y) => {
+    this.previousLeft += x;
+    this.previousTop += y;
   }
 
   render() {
-    const { x, y, isSelected } = this.state;
     const { source } = this.props;
-    const positionStyle = [
-      { translateX: x },
-      { translateY: y },
-    ];
 
     return (
       <Image
-        style={[
-          styles.item,
-          isSelected && styles.selected,
-        ]}
-        transform={positionStyle}
         source={source}
+        ref={item => this.item = item}
+        style={styles.item}
         {...this.panResponder.panHandlers}
       />
     );

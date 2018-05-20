@@ -12,11 +12,13 @@ class EditContainer extends Component {
   }
 
   addItem = (itemSrc) => {
+    const newItems = [
+      ...this.state.items,
+      { src: itemSrc },
+    ];
+
     this.setState({
-      items: [
-        ...this.state.items,
-        { src: itemSrc },
-      ],
+      items: newItems,
     });
   }
 
